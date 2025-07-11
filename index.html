@@ -704,7 +704,7 @@ button.active {
     - Tạo 2 thanh đao xoay quanh
     - Tối đa tạo được 20 đao
     - Bay vào zombie gần nhất
-    - Yêu cầu level 2
+    - Yêu cầu level 1
     - Sát thương: 1
     - Hiệu lực: 30s ⏱
     - Tiêu hao: 3 ⚡
@@ -717,7 +717,7 @@ button.active {
     - Tạo mưa kiếm rơi từng đợt
     - Số lượng kiếm tăng theo level
     - Bay vào zombie gần nhất
-    - Yêu cầu level 3
+    - Yêu cầu level 2
     - Sát thương: 1
     - Hiệu lực: 30s ⏱
     - Tiêu hao: 6 ⚡
@@ -730,7 +730,7 @@ button.active {
     - Tạo 2 quả cầu lửa quay quanh
     - Tạo được tối đa 10 quả cầu lửa
     - Tiêu diệt zombie chạm vào
-    - Yêu cầu level 5
+    - Yêu cầu level 3
     - Sát thương: 1
     - Hiệu lực: 45s ⏱
     - Tiêu hao: 8 ⚡
@@ -743,7 +743,7 @@ button.active {
     - Tạo 2 quả cầu băng lớn xoay quanh
     - Tạo được tối đa 10 quả cầu lửa
     - Gây sát thương diện rộng
-    - Yêu cầu level 10
+    - Yêu cầu level 3
     - Sát thương: 1
     - Hiệu lực: 60s ⏱
     - Tiêu hao: 12 ⚡
@@ -1461,19 +1461,19 @@ function activateTestSP() {
 // 🖱 Gán sự kiện nút
 // 🔪 Kỹ năng Đao
 document.getElementById("bladeBtn").onclick = () => {
-  if (player.level < 2) return showWarning("🔪 Yêu cầu Lv2");
+  if (player.level < 1) return showWarning("🔪 Yêu cầu Lv1");
   if (player.energy < 3) return showWarning("🔪 Không đủ 3⚡");
   activateSwordSkill();
 };
 // ⚔️ Kỹ năng Kiếm
 document.getElementById("swordBtn").onclick = () => {
-  if (player.level < 3) return showWarning("⚔️ Yêu cầu Lv3");
+  if (player.level < 2) return showWarning("⚔️ Yêu cầu Lv2");
   if (player.energy < 6) return showWarning("⚔️ Không đủ 6⚡");
   activateDownwardSwords();
 };
 // 🔥 Kỹ năng Lửa
 document.getElementById("fireBtn").onclick = () => {
-  if (player.level < 5) return showWarning("🔥 Yêu cầu Lv5");
+  if (player.level < 3) return showWarning("🔥 Yêu cầu Lv3");
   if (player.energy < 8) return showWarning("🔥 Không đủ 8⚡");
   if (!fireActive) {
     fireActive = true;
@@ -1495,7 +1495,7 @@ document.getElementById("fireBtn").onclick = () => {
 };
 // ❄️ Kỹ năng Băng
 document.getElementById("iceBtn").onclick = () => {
-  if (player.level < 10) return showWarning("❄️ Yêu cầu Lv10");
+  if (player.level < 3) return showWarning("❄️ Yêu cầu Lv3");
   if (player.energy < 12) return showWarning("❄️ Không đủ 12⚡");
   if (iceActive && Date.now() < iceEndTime) {
     iceActive = false;
