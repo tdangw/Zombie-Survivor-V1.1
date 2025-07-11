@@ -375,7 +375,7 @@ button.active {
 .warningPopup {
   position: fixed;
   top: 20%;
-  left: 45%;
+  left: 42.5%;
   transform: translateX(-50%);
   background: rgba(0, 32, 64, 0.9);
   color: var(--color-text);
@@ -860,7 +860,7 @@ let skillStats = {};             // 📊 Thống kê kỹ năng
 // 🧍 Trạng thái người chơi
 const player = {
   x: 480, y: 360, size: 20, speed: 1,
-  hearts: 10, energy: 1, mana: 1,
+  hearts: 10, energy: 1, mana: 10000,
   level: 1, score: 0,
   hitTimer: 0,
   name: "Player"
@@ -1368,10 +1368,14 @@ function releaseIceball(i) {
   iceballPool.push(i);
 }
 // 🧊 Hiển thị cảnh báo tạm thời
-function showWarning(message) {
+function showWarning(message, customStyle = {}) {
   const popup = document.createElement("div");
   popup.innerText = message;
   popup.className = "warningPopup";
+  // Gán từng thuộc tính style nếu có
+  for (const [key, value] of Object.entries(customStyle)) {
+    popup.style[key] = value;
+  }
   document.body.appendChild(popup);
   setTimeout(() => popup.remove(), 1500);
 }
@@ -2176,6 +2180,8 @@ if (player.score >= requiredScore) {
   player.hearts += 1 + (UPGRADE_TIERS.hpBoost[playerUpgrades.hpBoost] || 0);
   player.energy += 2; // 🎁 thưởng 2 năng lượng khi lên cấp
   player.mana += 2;   // 💠 thưởng 2 mana khi lên cấp
+  playerUpgrades.damageBoost += 0.5; // 💥 Tăng sát thương mỗi level
+  showWarning("+0.5 💥", { top: "30%", left: "45%", transform: "translate(-50%, -50%)"});
 // Cập nhật đổi nền khi lên cấp
 let bg;
 const level = player.level; // 👈 thêm dòng này để tránh lỗi
@@ -3528,9 +3534,9 @@ function startGame() {
   pendingWave = wave;        // 🌊 Wave sẽ hiển thị sau khi nâng cấp xong
 //Test
 // 🚀 Tăng nhanh để test wave 20+
- /* wave = 1;
+ wave = 1;
   player.level = 1;
-  player.score = 1000; // Đảm bảo đủ điểm để không bị tụt cấp */
+  player.score = 3000; // Đảm bảo đủ điểm để không bị tụt cấp 
 //Test
 }
 
@@ -3842,11 +3848,11 @@ function randomTier() {
 // 🌟 Hiển thị popup chọn kỹ năng khi tăng level
 /* ========= CẤU HÌNH ========= */
 const MAX_LV = {                         // giới hạn số-lượng
-  ufo        : 3,
+  ufo        : 3,                        // UFO tấn công
   missile    : 5,                        // tên lửa F18
   lightning  : 5,                        // tia sét diện rộng
   satellite  : 2,                        // vệ tinh laze
-  blackhole  : 2
+  blackhole  : 2                         // Hố đen
 };
 
 /* tên ngắn → regex nhận diện chuỗi nâng cấp */
@@ -4117,7 +4123,7 @@ if (skill.name === "Hố đen") {
     effect: () => {
       const skill = activeSkills.find(s => s.name === "Hố đen");
       if (skill) {
-        skill.level = Math.min((skill.level || 1) + 1, 2); // +1 tới tối đa 2 hố đen
+        skill.level = Math.min((skill.level || 0) + 1, 2); // +1 tới tối đa 2 hố đen
         showWarning("🕳️ +1 hố đen!");
         updateSkillsList();
       }
@@ -4132,7 +4138,7 @@ if (skill.name === "Vệ tinh laze") {
     effect: () => {
       const skill = activeSkills.find(s => s.name === "Vệ tinh laze");
       if (skill) {
-        skill.level = Math.min((skill.level || 1) + 1, 2); // +1 tới tối đa 2 vệ tinh
+        skill.level = Math.min((skill.level || 0) + 1, 2); // +1 tới tối đa 2 vệ tinh
         showWarning("🛰️ +1 vệ tinh!");
         updateSkillsList();
 }
@@ -4324,7 +4330,7 @@ function activateTwinMissiles(skill) {
   const createMissilePair = () => {
   const targets = zombies.filter(z => z.active);
 if (targets.length === 0) return;
-  const missileCount = Math.min(0 + (skill.level || 5), 5); // Tối đa 5 tên lửa
+  const missileCount = Math.min(0 + (skill.level || 0), 5); // Tối đa 5 tên lửa
 for (let i = 0; i < missileCount; i++) {
       const angleOffset = Math.random() * Math.PI * 2;
       const radius = 40;
@@ -4785,7 +4791,7 @@ if (skill.baseDamage !== undefined && skill.level === undefined) {
   skill.level = 0;
 }
   updateSkillsList();
-  showWarning(`🎉 Học kỹ năng: ${skill.icon} ${skill.name}`);
+  showWarning(`🎉 Học kỹ năng: ${skill.icon} ${skill.name}`, { left: "40%", transform: "translate(-50%, -50%)" });
 }
 }
 
