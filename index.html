@@ -4330,7 +4330,7 @@ function activateTwinMissiles(skill) {
   const createMissilePair = () => {
   const targets = zombies.filter(z => z.active);
 if (targets.length === 0) return;
-  const missileCount = Math.min(0 + (skill.level || 0), 5); // Tối đa 5 tên lửa
+  const missileCount = Math.min(0 + (skill.level || 5), 5); // Tối đa 5 tên lửa
 for (let i = 0; i < missileCount; i++) {
       const angleOffset = Math.random() * Math.PI * 2;
       const radius = 40;
