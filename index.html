@@ -860,7 +860,7 @@ let skillStats = {};             // 📊 Thống kê kỹ năng
 // 🧍 Trạng thái người chơi
 const player = {
   x: 480, y: 360, size: 20, speed: 1,
-  hearts: 10, energy: 1, mana: 10000,
+  hearts: 10, energy: 1, mana: 1,
   level: 1, score: 0,
   hitTimer: 0,
   name: "Player"
@@ -2055,7 +2055,7 @@ if (!z.isBoss && z.type !== "miniBoss") {
   const now = Date.now();
   if (now - z.lastShoot >= 60000) { // Zombie thường bắn mỗi 60 giây
     z.lastShoot = now;
-    shootEnemyBullet(z.x, z.y, 0.6 + Math.random() * 0.6, 0.005); // 0.5% xác suất
+    shootEnemyBullet(z.x, z.y, 0.6 + Math.random() * 0.6, 0.001); // 0.1% xác suất
   }
 }
 // 🧟 Xử lý va chạm với player
@@ -3534,9 +3534,9 @@ function startGame() {
   pendingWave = wave;        // 🌊 Wave sẽ hiển thị sau khi nâng cấp xong
 //Test
 // 🚀 Tăng nhanh để test wave 20+
- wave = 1;
+/* wave = 1;
   player.level = 1;
-  player.score = 3000; // Đảm bảo đủ điểm để không bị tụt cấp 
+  player.score = 3000; // Đảm bảo đủ điểm để không bị tụt cấp */
 //Test
 }
 
