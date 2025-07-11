@@ -860,7 +860,7 @@ let skillStats = {};             // 📊 Thống kê kỹ năng
 // 🧍 Trạng thái người chơi
 const player = {
   x: 480, y: 360, size: 20, speed: 1,
-  hearts: 10, energy: 1, mana: 10000,
+  hearts: 10, energy: 1, mana: 1,
   level: 1, score: 0,
   hitTimer: 0,
   name: "Player"
@@ -2635,7 +2635,15 @@ clones.forEach(clone => {
   miniCtx.arc(mapX, mapY, 2, 0, Math.PI * 2);
   miniCtx.fill();
 });
-
+// 🟦 Vẽ máy bay trên minimap
+activePlanes.forEach(plane => {
+  const mapX = (plane.x / worldWidth) * miniMapCanvas.width;
+  const mapY = (plane.y / worldHeight) * miniMapCanvas.height;
+  miniCtx.fillStyle = "#cc66ff";
+  miniCtx.beginPath();
+  miniCtx.arc(mapX, mapY, 2, 0, Math.PI * 2);
+  miniCtx.fill();
+});
   // Draw zombies
 for (let z of zombies) {
   if (!z.active) continue;
@@ -3359,6 +3367,8 @@ ctx.shadowColor = "black";
 activePlanes.forEach(plane => {
   ctx.fillStyle = "cyan";
 ctx.save();
+  ctx.shadowBlur = 2;
+  ctx.shadowColor = "cyan";
 ctx.translate(plane.x, plane.y);
 ctx.scale(plane.scale ?? 1, plane.scale ?? 1);
 ctx.globalAlpha = plane.opacity ?? 1;
@@ -4314,7 +4324,7 @@ function activateTwinMissiles(skill) {
   const createMissilePair = () => {
   const targets = zombies.filter(z => z.active);
 if (targets.length === 0) return;
-  const missileCount = Math.min(0 + (skill.level || 0), 5); // Tối đa 5 tên lửa
+  const missileCount = Math.min(0 + (skill.level || 5), 5); // Tối đa 5 tên lửa
 for (let i = 0; i < missileCount; i++) {
       const angleOffset = Math.random() * Math.PI * 2;
       const radius = 40;
@@ -4411,7 +4421,7 @@ function activateLightning(skill) { // Kích hoạt kỹ năng sét
 }
 // Kích hoạt kỹ năng Bom B52 - tái sử dụng hàm activateBombs
 function spawnPlanes(skill, amount = 3) {
-  const planeYBase = player.y - 180;
+  const planeYBase = player.y - 180; // Vị trí máy bay bắt đầu
 
   for (let i = 0; i < amount; i++) {
     const plane = {
@@ -4422,35 +4432,52 @@ function spawnPlanes(skill, amount = 3) {
       lastDropTime: Date.now(),
       nextDropDelay: 5000 + i * 500 + Math.random() * 300,
 
-      // 👇 Thêm hiệu ứng biến mất
+      // 👇 Hiệu ứng biến mất
       scale: 1,
       opacity: 1,
       disappearing: false
     };
+
     activePlanes.push(plane);
 
-    // 🎯 Cập nhật tốc độ + targetY mỗi 5s
-    const speedAdjustInterval = setInterval(() => {
-      // tốc độ ngẫu nhiên trong 1.0 - 4.0
-      plane.vx = Math.random() * 3 + 1;
-      // độ cao mới dao động ±20
-      plane.targetY += (Math.random() - 0.5) * 40;
-    }, 5000);
+    // ✅ Cập nhật tốc độ ngang mỗi 1–5 giây
+    function schedulePlaneSpeedAdjust() {
+      const delay = Math.random() * (5000 - 1000) + 1000;
+      plane._speedTimeout = setTimeout(() => {
+        plane.vx = Math.random() * (5 - 0.5) + 0.5;
+        schedulePlaneSpeedAdjust(); // Gọi lại để lặp
+      }, delay);
+    }
 
-    // 🎮 Cập nhật chuyển động và thả bom
+    // ✅ Cập nhật độ cao dao động mỗi 1–5 giây
+    function schedulePlaneHeightAdjust() {
+      const delay = Math.random() * (5000 - 1000) + 1000;
+      plane._heightTimeout = setTimeout(() => {
+        plane.targetY += (Math.random() - 0.5) * 40; // dao động ±20
+        schedulePlaneHeightAdjust(); // Lặp tiếp
+      }, delay);
+    }
+
+    // 🔄 Kích hoạt 2 chu kỳ điều chỉnh
+    schedulePlaneSpeedAdjust();
+    schedulePlaneHeightAdjust();
+
+    // 🎮 Cập nhật chuyển động và thả bom định kỳ
     const planeInterval = setInterval(() => {
       const now = Date.now();
+
+      // ➡ Di chuyển theo tốc độ hiện tại
       plane.x += plane.vx;
 
-      // Bay mượt về targetY
+      // 📈 Bay mượt đến targetY
       plane.y += (plane.targetY - plane.y) * 0.05;
 
-      // 💣 Thả bom
+      // 💣 Thả bom nếu đến thời điểm
       if (now - plane.lastDropTime > plane.nextDropDelay) {
         plane.lastDropTime = now;
-        plane.nextDropDelay = 800 + Math.random() * 800;
+        plane.nextDropDelay = 1000 + Math.random() * 2000; // từ 1–3s
 
-        const targetY = plane.y + 100 + Math.random() * (canvas.height * 1.2); // 📌 120%
+        const targetY = plane.y + 100 + Math.random() * (canvas.height * 0.9); // 90%
         bombsB52.push({
           x: plane.x,
           y: plane.y,
@@ -4464,17 +4491,20 @@ function spawnPlanes(skill, amount = 3) {
         });
       }
 
-      // 🌀 Khi tới gần rìa map thì bắt đầu hiệu ứng biến mất
+      // 🌀 Khi gần rìa map thì bắt đầu biến mất
       if (!plane.disappearing && plane.x > worldWidth - 180) {
         plane.disappearing = true;
       }
 
+      // 🧼 Hiệu ứng thu nhỏ và xoá máy bay
       if (plane.disappearing) {
         plane.scale *= 0.95;
         plane.opacity -= 0.05;
+
         if (plane.scale < 0.1 || plane.opacity <= 0) {
           clearInterval(planeInterval);
-          clearInterval(speedAdjustInterval);
+          clearTimeout(plane._speedTimeout);
+          clearTimeout(plane._heightTimeout);
           activePlanes.splice(activePlanes.indexOf(plane), 1);
         }
       }
@@ -4484,7 +4514,8 @@ function spawnPlanes(skill, amount = 3) {
 const planeWaves = [
   { delay: 0, amount: 1 },      // tạo 3 máy bay ngay lập tức
   { delay: 3000, amount: 1 },  // tạo 5 máy bay sau 30s
-  { delay: 6000, amount: 1 },  // tạo 2 máy bay sau 60s
+  { delay: 6000, amount: 1 },
+  { delay: 9000, amount: 1 },  // tạo 2 máy bay sau 60s
 ];
 // 💣 Bom B52: rơi xuống, nổ khi trúng zombie, nếu không trúng thì nổ sau 5s khi chạm đất
 function activateBombs(skill) {
